@@ -106,4 +106,21 @@ async def create_item(request: Request, user: dict = Depends(get_current_user)):
     return ok("Item created successfully.", item, status=201)
 
 
+@api.put("/items/{item_id}", summary="Update (replace) an item", openapi_extra=_BODY_SCHEMA)
+async def update_item(item_id: str, request: Request, user: dict = Depends(get_current_user)):
+    item = _get_accessible(item_id, user)  # 401 -> 404 -> 400 -> 409
+    clean, details = validate_item_body(await _read_body(request))
+    _raise_if_invalid(details)
+    new_status = clean.get("status", item["status"])
+    if item["status"] == "done" and new_status != "done":
+        raise ApiError(409, CONFLICT, "A completed item cannot be moved back to "
+                                      f"'{new_status}'. Delete it or create a new item instead.")
+    if _is_duplicate(item["ownerId"], clean["title"], clean["date"], exclude_id=item_id):
+        raise ApiError(409, CONFLICT, "The owner already has an item with this title on this date.")
+    item.update(clean)
+    item["status"] = new_status
+    item["updatedAt"] = _now()
+    return ok("Item updated successfully.", item)
+
+
 app.include_router(api)
