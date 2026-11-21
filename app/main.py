@@ -54,6 +54,18 @@ def _raise_if_invalid(details):
         raise ApiError(400, VALIDATION_ERROR, "The request contains invalid or missing fields.", details)
 
 
+_BODY_SCHEMA = {"requestBody": {"required": True, "content": {"application/json": {"schema": {
+    "type": "object", "required": ["title", "category", "date"],
+    "properties": {
+        "title": {"type": "string", "minLength": 3, "maxLength": 100, "example": "Physics quiz"},
+        "category": {"type": "string", "enum": list(("event", "task", "exam", "deadline", "other"))},
+        "date": {"type": "string", "example": "2026-12-10"},
+        "time": {"type": "string", "nullable": True, "example": "09:30"},
+        "location": {"type": "string", "nullable": True},
+        "description": {"type": "string", "nullable": True},
+        "status": {"type": "string", "enum": ["pending", "confirmed", "done"]}}}}}}}
+
+
 @api.get("/greeting", response_class=HTMLResponse, summary="HTML greeting page")
 def get_greeting():
     return HTMLResponse(greeting.render(), media_type="text/html; charset=utf-8")
@@ -79,6 +91,19 @@ def list_items(request: Request, user: dict = Depends(get_current_user),
 @api.get("/items/{item_id}", summary="Get one item")
 def get_item(item_id: str, user: dict = Depends(get_current_user)):
     return ok("Item retrieved successfully.", _get_accessible(item_id, user))
+
+
+@api.post("/items", status_code=201, summary="Create an item", openapi_extra=_BODY_SCHEMA)
+async def create_item(request: Request, user: dict = Depends(get_current_user)):
+    clean, details = validate_item_body(await _read_body(request))
+    _raise_if_invalid(details)
+    if _is_duplicate(user["id"], clean["title"], clean["date"]):
+        raise ApiError(409, CONFLICT, "You already have an item with this title on this date.")
+    now = _now()
+    item = {"id": store.new_id(), **clean, "status": clean.get("status", "pending"),
+            "ownerId": user["id"], "createdAt": now, "updatedAt": now}
+    store.ITEMS[item["id"]] = item
+    return ok("Item created successfully.", item, status=201)
 
 
 app.include_router(api)
