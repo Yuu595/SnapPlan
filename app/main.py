@@ -123,4 +123,11 @@ async def update_item(item_id: str, request: Request, user: dict = Depends(get_c
     return ok("Item updated successfully.", item)
 
 
+@api.delete("/items/{item_id}", summary="Delete an item")
+def delete_item(item_id: str, user: dict = Depends(get_current_user)):
+    _get_accessible(item_id, user)
+    del store.ITEMS[item_id]
+    return ok("Item deleted successfully.", None)
+
+
 app.include_router(api)
