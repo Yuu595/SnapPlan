@@ -66,8 +66,12 @@ See [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
 ### `git shortlog -sn --all`
 ```
-<paste the output of `git shortlog -sn --all` here before submitting>
+    15	Nazim Aliyev
+     8	Abdulaziz Khalmetov
+     2	xalmetovv
 ```
+
+Note: Nazim Aliyev commits under two GitHub accounts (Yuu595 and naliyev19937), and `xalmetovv` is Abdulaziz Khalmetov's GitHub account (merges made on GitHub).
 
 ## Demo video
 Demo video (CRUD, authorization failures, validation errors, greeting page): https://drive.google.com/drive/folders/122hN96tdHKiawQYyYOtIMnA7PuNjifx-?usp=sharing
