@@ -70,4 +70,4 @@ See [CONTRIBUTORS.md](CONTRIBUTORS.md).
 ```
 
 ## Demo video
-<paste the YouTube link here (max 5 minutes)>
+Demo video (CRUD, authorization failures, validation errors, greeting page): https://drive.google.com/drive/folders/122hN96tdHKiawQYyYOtIMnA7PuNjifx-?usp=sharing
