@@ -1,0 +1,102 @@
+### Example requests (VS Code "REST Client" / JetBrains HTTP Client). Server: uvicorn app.main:app
+@base = http://127.0.0.1:8000/api/v1
+
+### 1. HTML greeting page (no token)
+GET {{base}}/greeting
+
+### 2. List own items (user A) -> 200
+GET {{base}}/items
+Authorization: Bearer user-a-token
+
+### 3. Filter + paginate -> 200
+GET {{base}}/items?category=exam&page=1&perPage=5
+Authorization: Bearer user-a-token
+
+### 4. Get one item -> 200
+GET {{base}}/items/item_101
+Authorization: Bearer user-a-token
+
+### 5. Create item -> 201
+POST {{base}}/items
+Authorization: Bearer user-a-token
+Content-Type: application/json
+
+{"title": "Physics quiz", "category": "exam", "date": "2026-12-10", "time": "09:30", "location": "Room 12"}
+
+### 6. Update (replace) item -> 200
+PUT {{base}}/items/item_102
+Authorization: Bearer user-a-token
+Content-Type: application/json
+
+{"title": "Hackathon poster (updated)", "category": "event", "date": "2026-12-06", "status": "confirmed"}
+
+### 7. Delete item -> 200
+DELETE {{base}}/items/item_102
+Authorization: Bearer user-a-token
+
+### ---- Failure demos ----
+
+### 8. No token -> 401
+GET {{base}}/items
+
+### 9. Invalid token -> 401
+GET {{base}}/items
+Authorization: Bearer wrong-token
+
+### 10. User A reads User B's item -> 404
+GET {{base}}/items/item_201
+Authorization: Bearer user-a-token
+
+### 11. User B updates User A's item -> 404
+PUT {{base}}/items/item_101
+Authorization: Bearer user-b-token
+Content-Type: application/json
+
+{"title": "Hacked", "category": "task", "date": "2026-12-10"}
+
+### 12. User B deletes User A's item -> 404
+DELETE {{base}}/items/item_101
+Authorization: Bearer user-b-token
+
+### 13. Non-existent ID -> 404
+GET {{base}}/items/item_999
+Authorization: Bearer user-a-token
+
+### 14. Validation errors -> 400
+POST {{base}}/items
+Authorization: Bearer user-a-token
+Content-Type: application/json
+
+{"title": "ab", "category": "party", "date": "10-12-2026", "color": "red"}
+
+### 15. Duplicate item -> 409
+POST {{base}}/items
+Authorization: Bearer user-a-token
+Content-Type: application/json
+
+{"title": "CSCI 3509 Midterm", "category": "exam", "date": "2026-11-20"}
+
+### 16. Unsupported method -> 405
+PATCH {{base}}/items/item_101
+Authorization: Bearer user-a-token
+
+### ---- Administrator ----
+
+### 17. Admin lists ALL items -> 200
+GET {{base}}/items
+Authorization: Bearer admin-token
+
+### 18. Admin reads User B's item -> 200
+GET {{base}}/items/item_201
+Authorization: Bearer admin-token
+
+### 19. Admin updates User A's item -> 200
+PUT {{base}}/items/item_101
+Authorization: Bearer admin-token
+Content-Type: application/json
+
+{"title": "CSCI 3509 Midterm (moved)", "category": "exam", "date": "2026-11-22"}
+
+### 20. Admin deletes User B's item -> 200
+DELETE {{base}}/items/item_202
+Authorization: Bearer admin-token
